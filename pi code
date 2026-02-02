@@ -1,1 +1,149 @@
+import time
+import random
 
+# ==============================
+# CONFIGURATION / CONSTANTS
+# ==============================
+
+EMG_LOW_THRESHOLD = 200
+EMG_MED_THRESHOLD = 600
+
+ANGLE_MIN = 0
+ANGLE_MAX = 120
+
+LOOP_DELAY = 0.2  # seconds
+
+# Assistance Modes
+MODE_LOW = "LOW_ASSIST"
+MODE_MED = "MED_ASSIST"
+MODE_HIGH = "HIGH_ASSIST"
+
+system_running = True
+
+
+# ==============================
+# SENSOR SIMULATION FUNCTIONS
+# ==============================
+
+def read_emg():
+    """
+    Simulate EMG sensor reading
+    Replace this later with ADS1115 reading
+    """
+    return random.randint(0, 1000)
+
+
+def read_imu_angle():
+    """
+    Simulate IMU knee angle (degrees)
+    Replace later with real IMU data
+    """
+    return random.randint(20, 100)
+
+
+# ==============================
+# CONTROL LOGIC
+# ==============================
+
+def decide_assistance(emg_value):
+    """
+    Decide assistance level based on EMG
+    """
+    if emg_value < EMG_LOW_THRESHOLD:
+        return MODE_HIGH
+    elif emg_value < EMG_MED_THRESHOLD:
+        return MODE_MED
+    else:
+        return MODE_LOW
+
+
+def compute_motor_angle(assist_mode, knee_angle):
+    """
+    Decide motor output angle based on mode
+    """
+    if assist_mode == MODE_HIGH:
+        return min(knee_angle + 30, ANGLE_MAX)
+
+    elif assist_mode == MODE_MED:
+        return min(knee_angle + 15, ANGLE_MAX)
+
+    else:  # LOW assistance
+        return knee_angle
+
+
+# ==============================
+# ACTUATOR (SERVO) SIMULATION
+# ==============================
+
+def move_servo(target_angle):
+    """
+    Simulate servo movement
+    Replace later with GPIO PWM control
+    """
+    print(f"Servo → moving to {target_angle}°")
+
+
+# ==============================
+# SAFETY SYSTEM
+# ==============================
+
+def emergency_stop():
+    """
+    Emergency stop handler
+    """
+    global system_running
+    system_running = False
+    print("\n!!! EMERGENCY STOP ACTIVATED !!!")
+    print("System halted safely.")
+
+
+# ==============================
+# MAIN CONTROL LOOP
+# ==============================
+
+def main():
+    print("===================================")
+    print(" RAF Rehab Assistive Frame System ")
+    print(" Control System Initializing... ")
+    print("===================================\n")
+
+    time.sleep(1)
+    print("System READY\n")
+
+    global system_running
+
+    try:
+        while system_running:
+
+            # Read sensors
+            emg = read_emg()
+            knee_angle = read_imu_angle()
+
+            # Decide assistance
+            assist_mode = decide_assistance(emg)
+
+            # Compute motor command
+            motor_angle = compute_motor_angle(assist_mode, knee_angle)
+
+            # Display system state
+            print("-----------------------------------")
+            print(f"EMG Value      : {emg}")
+            print(f"Knee Angle     : {knee_angle}°")
+            print(f"Assist Mode    : {assist_mode}")
+            print(f"Motor Target   : {motor_angle}°")
+
+            # Actuate motor
+            move_servo(motor_angle)
+
+            time.sleep(LOOP_DELAY)
+
+    except KeyboardInterrupt:
+        emergency_stop()
+
+
+# ==============================
+# PROGRAM ENTRY POINT
+# ==============================
+
+if _name_ == "main":
+    main()
